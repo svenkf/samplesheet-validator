@@ -1,0 +1,77 @@
+# validation_rules.yaml
+
+# Expected filenames for the samplesheet
+required_filenames: []  # No global filename requirement
+
+# Sections that must be present in the samplesheet
+required_sections:
+  - Header
+  - Reads
+  - Settings
+  - Data
+
+# Required fields within each section
+required_fields:
+  Header:
+    - Investigator Name
+    - Experiment Name
+    - Date
+    - Workflow
+    - Application
+    - Chemistry
+  Data:
+    - Sample_ID
+    - Sample_Name
+    - index
+    - index2
+    - Description
+
+# Allowed characters for specific fields along with descriptions
+allowed_characters:
+  Sample_ID:
+    pattern: 'A-Za-z0-9\-'
+    description: "letters, numbers, and hyphens (no spaces)"
+  Sample_Name:
+    pattern: 'A-Za-z0-9\-'
+    description: "letters, numbers, and hyphens (no spaces)"
+  index:
+    pattern: 'ACGT'
+    description: "A, C, G and T (no spaces)"
+  index2:
+    pattern: 'ACGT'
+    description: "A, C, G and T (no spaces)"
+  Description:
+    pattern: 'A-Za-z0-9_\-.\s'
+    description: "letters, numbers, underscores, hyphens, periods, and spaces"
+
+# Pipeline-specific validation rules
+pipelines:
+  NPM1:
+    type: keyword
+    keywords:
+      - 'npm1'
+    description_check: true
+  FLT3-ITD:
+    type: keyword
+    keywords:
+      - 'flt3-itd'
+      - 'flt3_itd'
+    description_check: true
+  Archer:
+    type: keyword
+    keywords:
+      - 'fp_pst'
+    description_check: true
+  GMS-Myeloid:
+    type: keyword
+    keywords:
+      - 'gms-myeloid'
+    description_check: true
+  COVID:
+    type: keyword
+    keywords:
+      - 'covid'
+      - 'covid-19'
+      - 'covid19'
+    description_check: true
+    sample_id_regex: '^D[A-Z]2[0-4]\d{6}$'  # Enforce regex for Sample_ID and Sample_Name

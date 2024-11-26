@@ -1,0 +1,27 @@
+<!-- templates/index.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Samplesheet Validator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Upload Your Samplesheet</h1>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul class="flashes">
+          {% for message in messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+    <form method="post" enctype="multipart/form-data">
+        <label for="samplesheet">Select a CSV file:</label>
+        <input type="file" name="samplesheet" id="samplesheet" accept=".csv" required>
+        <button type="submit">Upload and Validate</button>
+    </form>
+</body>
+</html>
