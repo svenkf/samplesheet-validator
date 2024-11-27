@@ -127,7 +127,7 @@ def assign_pipeline(sample, pipelines, typo_samples):
                 assigned_pipelines.append(pipeline_name)
                 continue
 
-            if pipeline_name in ['FLT3-ITD', 'NPM1']:
+            if pipeline_name in ['FLT3-ITD', 'NPM1', 'Archer', 'GMS-Myeloid', 'COVID']:
                 close_matches = difflib.get_close_matches(description, keywords, cutoff=0.6)
                 if close_matches:
                     typo_samples.append(f"'{sample.Description}'. Did you mean '{close_matches[0]}'?")
@@ -162,11 +162,11 @@ def validate_pipeline_rules(ss, pipelines, issues, file_path):
     data_issues = issues['[Data]']
     filename_issues = issues['Filename']
     settings_issues = issues['[Settings]']
-    filename_check_required = False
     settings_check_required = False
 
     typo_samples = []
     missing_keyword_samples = defaultdict(list)
+    gms_myeloid_assigned = False  # Initialize flag for GMS-Myeloid assignment
 
     for idx, sample in enumerate(ss.samples, start=1):
         pipeline = assign_pipeline(sample, pipelines, typo_samples)
@@ -188,7 +188,7 @@ def validate_pipeline_rules(ss, pipelines, issues, file_path):
                     missing_keyword_samples[pipeline].append(f"Sample_ID: {sample.Sample_ID}, Description: {sample.Description}")
 
         if pipeline == 'GMS-Myeloid':
-            filename_check_required = True
+            gms_myeloid_assigned = True  # Set flag to True if GMS-Myeloid is assigned
             settings_check_required = True
 
         if pipeline == 'COVID':
@@ -200,23 +200,37 @@ def validate_pipeline_rules(ss, pipelines, issues, file_path):
             if not re.match(pattern, sample.Sample_Name):
                 invalid_name_samples.append(f"Sample_Name: {sample.Sample_Name}")
             if invalid_id_samples:
-                data_issues.append(f"Sample_ID does not match the required pattern for pipeline 'COVID'. Expected format: 'D[A-Z]2[0-4]XXXXXX':\n\t" + "\n\t".join(invalid_id_samples))
+                data_issues.append(f"Sample_ID does not match the required pattern for pipeline 'COVID'. Expected format: '{pattern}':\n\t" + "\n\t".join(invalid_id_samples))
             if invalid_name_samples:
-                data_issues.append(f"Sample_Name does not match the required pattern for pipeline 'COVID'. Expected format: 'D[A-Z]2[0-4]XXXXXX':\n\t" + "\n\t".join(invalid_name_samples))
+                data_issues.append(f"Sample_Name does not match the required pattern for pipeline 'COVID'. Expected format: '{pattern}':\n\t" + "\n\t".join(invalid_name_samples))
 
+    # Report missing keywords
     for pipeline, samples in missing_keyword_samples.items():
         data_issues.append(f"Description does not contain required keyword(s) for pipeline '{pipeline}':\n\t" + "\n\t".join(samples))
 
+    # Collect typo messages
     if typo_samples:
         typo_messages = ["\t" + msg for msg in typo_samples]
         data_issues.append("Possible typo in Description:\n" + "\n".join(typo_messages))
 
-    if filename_check_required:
-        actual_filename = os.path.basename(file_path)
+    # Perform filename checks based on GMS-Myeloid assignment
+    actual_filename = os.path.basename(file_path)
+
+    if gms_myeloid_assigned:
+        # Check that the filename is exactly 'SampleSheet.csv'
         if actual_filename != 'SampleSheet.csv':
             filename_issues.append(f"For 'GMS-Myeloid' pipeline, the samplesheet must be named 'SampleSheet.csv', but got '{actual_filename}'.")
+    else:
+        # No GMS-Myeloid samples: perform alternative filename checks
+        # Check that filename contains 'samplesheet' (case-insensitive)
+        if 'samplesheet' not in actual_filename.lower():
+            filename_issues.append(f"The samplesheet filename must contain 'samplesheet' (case-insensitive). Got '{actual_filename}'.")
+        # Check that filename does not contain '_original' (case-insensitive)
+        if '_original' in actual_filename.lower():
+            filename_issues.append(f"The samplesheet filename must not contain '_original'. Got '{actual_filename}'.")
 
     if settings_check_required:
+        # Check that required settings are present
         required_settings_fields = [
             'Adapter',
             'AdapterRead2',
@@ -290,7 +304,21 @@ def validate_samplesheet(file_path, rules_path):
     try:
         ss = SampleSheet(file_path)
     except Exception as e:
-        issues['Parsing Error'].append(str(e))
+        error_message = str(e)
+        issues['Parsing Error'].append(f"An error occurred while parsing the samplesheet: {error_message}")
+
+        # Check for common parsing errors and provide guidance
+        if 'invalid literal for int()' in error_message:
+            issues['Parsing Error'].append(
+                "This error often occurs due to unexpected or invisible characters in the samplesheet. "
+                "Please check the file for any extra characters, such as semicolons ';' or other symbols, "
+                "Consider opening the CSV file in a plain text editor (i.e. Notepad) to inspect and remove hidden characters."
+            )
+        else:
+            issues['Parsing Error'].append(
+                "Please ensure that the samplesheet is correctly formatted and does not contain any invalid characters."
+            )
+
         logging.error(f"Error parsing samplesheet '{file_path}': {e}")
         traceback.print_exc()
         return issues

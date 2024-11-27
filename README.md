@@ -54,9 +54,13 @@ Validation:
             			Detects possible typos using difflib to suggest correct pipeline names. If written 'f3tl-idt' it is still able to identify the typo and suggest coorection to 'flt3-itd'
         		Regex Validation (Specific to COVID Pipeline):
             			Ensures that Sample_ID and Sample_Name match the required regex pattern: D[A-Z]2[0-4]\d{6}
-
+		- Filename
+			Ensures the file contains 'samplesheet' (case insensitive) and does not allow '_original' (because demuxer will not perform some editings if there is already a *_original.csv in the /raw_runs directory.
+				Allowed (example): sampleSheet123_blabla.csv
+				Disallowed: samplesheet_original.csv	
 		- Filename and Settings Validation (Specific to GMS-Myeloid Pipeline)
-			- Filename: GMS-Myeloid is picky and needs the samplesheet file to be named exactly 'SampleSheet.csv'.
+			- if the samplesheet contains the keyword 'gms-myeloid' in the 'Description' field, then it will check the name of that file and the fields in the [Settings] section.
+			- GMS-Myeloid is picky and needs the samplesheet file to be named exactly 'SampleSheet.csv'.
     			- Settings Validation:
         			Verifies the presence of required settings fields:
             				Adapter
@@ -78,4 +82,4 @@ Environment Variables:
         SLIMS_PASSWORD: Password for SLIMS API access.
 
     Flask Secret Key:
-        FLASK_SECRET_KEY: A secret key for securely signing the session cookie and other security-related needs.
+        FLASK_SECRET_KEY: A secret key for securely signing the session and other security-related needs.
