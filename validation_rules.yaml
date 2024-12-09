@@ -54,6 +54,9 @@ pipelines:
     sample_id_patterns:
       - 'PosDK-\d{6}-NPM1'
       - 'NegDK-\d{6}-NPM1'
+    sample_id_display_patterns:
+      - 'PosDK-<DATE>-NPM1'
+      - 'NegDK-<DATE>-NPM1'
   FLT3-ITD:
     type: keyword
     keywords:
@@ -63,6 +66,9 @@ pipelines:
     sample_id_patterns:
       - 'PosDK-\d{6}-FLT3'
       - 'NegDK-\d{6}-FLT3'
+    sample_id_display_patterns:
+      - 'PosDK-<DATE>-FLT3'
+      - 'NegDK-<DATE>-FLT3'
   Archer:
     type: keyword
     keywords:

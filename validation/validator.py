@@ -231,7 +231,7 @@ def validate_pipeline_rules(ss, pipelines, issues, file_path):
     typo_samples = []
     missing_keyword_samples = defaultdict(list)
     gms_myeloid_assigned = False
-    pipeline_pattern_issues = defaultdict(lambda: {"message": "", "samples": []})
+    pipeline_pattern_issues = defaultdict(list)  # Changed to list of sample IDs
 
     header_date_str = ss.Header.get('Date', '').strip()
     if not header_date_str:
@@ -276,9 +276,7 @@ def validate_pipeline_rules(ss, pipelines, issues, file_path):
                     break
             if not date_match:
                 expected = sample_id_display_patterns if sample_id_display_patterns else sample_id_patterns
-                message = f"Sample_ID does not match the required pattern for pipeline '{pipeline}': Expected formats: {', '.join(expected)}."
-                samples = [sample.Sample_ID]
-                data_issues.append(f"{message}\n\tSample_ID: {sample.Sample_ID}")
+                pipeline_pattern_issues[pipeline].append(sample.Sample_ID)
             else:
                 if header_date_formatted and date_match != header_date_formatted:
                     data_issues.append(
@@ -311,6 +309,13 @@ def validate_pipeline_rules(ss, pipelines, issues, file_path):
                 data_issues.append(f"Sample_ID does not match the required pattern for pipeline 'COVID'. Expected format: '{pattern}':\n\t" + "\n\t".join(invalid_id_samples))
             if invalid_name_samples:
                 data_issues.append(f"Sample_Name does not match the required pattern for pipeline 'COVID'. Expected format: '{pattern}':\n\t" + "\n\t".join(invalid_name_samples))
+
+    # Add grouped pipeline pattern issues
+    for pipeline, sample_ids in pipeline_pattern_issues.items():
+        expected_patterns = pipelines[pipeline].get('sample_id_display_patterns', pipelines[pipeline].get('sample_id_patterns', []))
+        message = f"Sample_ID does not match the required pattern for pipeline '{pipeline}': Expected formats: {', '.join(expected_patterns)}."
+        samples_str = "\n\t".join(sample_ids)
+        data_issues.append(f"{message}\n\tSample_ID(s):\n\t{samples_str}")
 
     for pipeline, samples_list in missing_keyword_samples.items():
         issue_message = f"Description does not contain required keyword(s) for pipeline '{pipeline}':\n\t" + "\n\t".join(samples_list)
@@ -427,4 +432,3 @@ def main():
 # If you want to run locally:
 # if __name__ == "__main__":
 #     main()
-
