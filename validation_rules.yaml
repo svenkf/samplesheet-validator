@@ -51,12 +51,18 @@ pipelines:
     keywords:
       - 'npm1'
     description_check: true
+    sample_id_patterns:
+      - 'PosDK-\d{6}-NPM1'
+      - 'NegDK-\d{6}-NPM1'
   FLT3-ITD:
     type: keyword
     keywords:
       - 'flt3-itd'
       - 'flt3_itd'
     description_check: true
+    sample_id_patterns:
+      - 'PosDK-\d{6}-FLT3'
+      - 'NegDK-\d{6}-FLT3'
   Archer:
     type: keyword
     keywords:
