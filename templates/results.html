@@ -10,7 +10,7 @@
     {% if issues %}
         <div class="results error">
             <div class="icon error">&#128078;</div>
-            <p><strong>Oh no! Some Issues Were Found</strong></p>
+            <p><strong>Some Issues Were Found</strong></p>
             {% for section, messages in issues.items() %}
                 {% if messages %}
                     <h2>{{ section }}</h2>
@@ -25,7 +25,7 @@
     {% else %}
         <div class="results success">
             <div class="icon success">&#128077;</div>
-            <p><strong>Hooray! No issues found! Your samplesheet is valid.</strong></p>
+            <p><strong>No issues found! Your samplesheet is valid.</strong></p>
         </div>
     {% endif %}
     <a href="{{ url_for('upload_file') }}">Validate Another File</a>

@@ -231,7 +231,7 @@ def validate_pipeline_rules(ss, pipelines, issues, file_path):
     typo_samples = []
     missing_keyword_samples = defaultdict(list)
     gms_myeloid_assigned = False
-    pipeline_pattern_issues = defaultdict(list)  # Changed to list of sample IDs
+    pipeline_pattern_issues = defaultdict(list)
 
     header_date_str = ss.Header.get('Date', '').strip()
     if not header_date_str:
@@ -362,7 +362,8 @@ def validate_samplesheet(file_path, rules_path):
         if 'invalid literal for int()' in error_message:
             issues['Parsing Error'].append(
                 "This error often occurs due to unexpected or invisible characters. "
-                "Check the file for extra characters, such as semicolons ';' or other symbols."
+                "Please consider opening the file in a text editor (i.e. Notepad) and"
+		" check for extra characters, such as semicolons ';' or other symbols."
             )
         else:
             issues['Parsing Error'].append(
