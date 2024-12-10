@@ -1,15 +1,15 @@
 Overview:
 
-Given the issues in demuxer and other pipelines that occur because of problems in the SampleSheet.csv, this application aims to validate samplesheets before starting the sequencing machines. This web application was designed to validate Illumina samplesheets. It ensures that a given samplesheets is in accordance to different standards for the correct functioning of our pipelines. It prints all found issues to be corrected before starting the sequencing runs.
+Given the issues we have because of issues in the samplesheets, this application aims to validate samplesheets before starting the sequencing machines. It ensures that a given samplesheet is in accordance for the correct functioning of our pipelines. It prints all found issues to be corrected before starting the sequencing runs.
 
 Features
 
 	File Upload: expects a CSV samplesheets for validation.
 	Validation: Checks for required sections, fields, allowed characters, and pipeline-specific rules.
-	SLIMS Integration: Verifies if samples already exist in the SLIMS system to prevent duplicates.
 	Logging: Detailed information on what needs to be corrected.
 
 Validation:
+
 	sample-sheet Module:
 		- Ensure the format and structure is in accordance to Illumina's samplesheet model.
 		- Parses and ensures that essential sections and fields are present in the samplesheet:
@@ -24,9 +24,7 @@ Validation:
             				Investigator Name
             				Experiment Name
             				Date
-            				Workflow
-            				Application
-            				Chemistry
+            				
         			Data:
             				Sample_ID
             				Sample_Name
@@ -40,7 +38,6 @@ Validation:
         		Sample_Name
         		index
         		index2
-		- SLIMS connection: It connects to SLIMS using demuxer credentials to check if a given Sample_ID already has a fastq object in SLIMS.
 		- Pipeline-Specific Validation
 			Since some pipelines rely on the 'Description' field to be properly written to extract the samples to be run by them, we have to ensure that the description has the keyword 'npm1' and not 'nmp1', for example.
     			Pipelines Handled and their keywords:
@@ -70,16 +67,29 @@ Validation:
             				Read1StartFromCycle
             				Read2StartFromCycle
 Installation:
+	to run it on your machine, you will have to turn off the VPN and:
+		# Clone the repo		
+		git clone https://github.com/ClinicalGenomicsGBG/samplesheet-validator.git
+		
+		#Go here
+		cd samplesheet-validator
+		
+		#Install the requirements:
+		pip install -r requirements.txt
+
+		#Start the app
+		python app.py
+
+		#On your browser go to http://172.20.150.139:5000/ and hopefully the page will load
+		
 
 Configuration:
 	The validation_rules.yaml file sets the rules for samplesheet validation, including required sections, fields, allowed characters, and pipeline-specific criteria.
-
-Environment Variables:
-
-    SLIMS Credentials:
-        SLIMS_URL: URL of the SLIMS REST API.
-        SLIMS_USER: Username for SLIMS API access.
-        SLIMS_PASSWORD: Password for SLIMS API access.
-
-    Flask Secret Key:
-        FLASK_SECRET_KEY: A secret key for securely signing the session and other security-related needs.
+	Some things need to be adjusted on validator.py for the time being:
+		whatever is allowed on the WOPR and wgs-somatic Descriptions need to be added or removed on the functions:
+			- validate_wopr_sample
+			- validate_somatic_sample
+		If you want to make the type detection function more strict or relaxed, go to function assign_pipeline and search for the 'cutoff=0.5'
+			-increasing it will make it allow fewer differences between the 'keyword' and what was actually written in the samplesheet
+			- decreasing it will make it allow more differences
+		

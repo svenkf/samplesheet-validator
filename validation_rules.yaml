@@ -16,9 +16,6 @@ required_fields:
     - Investigator Name
     - Experiment Name
     - Date
-    - Workflow
-    - Application
-    - Chemistry
   Data:
     - Sample_ID
     - Sample_Name
